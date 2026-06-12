@@ -38,6 +38,15 @@ jobs:
           LATENCY=$(jq -r '.latency' stats.json)
           LAST_UPDATED=$(jq -r '.last_updated' stats.json)
 
+          BADGES_CPU_TEMP=$(jq -r '.cpu_temperature' badges_stats.json)
+          BADGES_ENERGY_RATE=$(jq -r '.energy_rate' badges_stats.json)
+          BADGES_BATTERY_PERCENTAGE=$(jq -r '.battery_percentage' badges_stats.json)
+          BADGES_BATTERY_TIME_LEFT=$(jq -r '.battery_time_left' badges_stats.json)
+          BADGES_UPTIME=$(jq -r '.uptime' badges_stats.json)
+          BADGES_LATENCY=$(jq -r '.latency' badges_stats.json)
+          BADGES_LAST_UPDATED=$(jq -r '.last_updated' badges_stats.json)
+
+
           sed -i "s|__CPU_TEMP__|$CPU_TEMP|g" README.md
           sed -i "s|__ENERGY_RATE__|$ENERGY_RATE|g" README.md
           sed -i "s|__BATTERY_PERCENTAGE__|$BATTERY_PERCENTAGE|g" README.md
@@ -45,6 +54,15 @@ jobs:
           sed -i "s|__UPTIME__|$UPTIME|g" README.md
           sed -i "s|__LATENCY__|$LATENCY|g" README.md
           sed -i "s|__LAST_UPDATED__|$LAST_UPDATED|g" README.md
+
+          sed -i "s|__BADGES_CPU_TEMP__|$BADGES_CPU_TEMP|g" README.md
+          sed -i "s|__BADGES_ENERGY_RATE__|$BADGES_ENERGY_RATE|g" README.md
+          sed -i "s|__BADGES_BATTERY_PERCENTAGE__|$BADGES_BATTERY_PERCENTAGE|g" README.md
+          sed -i "s|__BADGES_BATTERY_TIME_LEFT__|$BADGES_BATTERY_TIME_LEFT|g" README.md
+          sed -i "s|__BADGES_UPTIME__|$BADGES_UPTIME|g" README.md
+          sed -i "s|__BADGES_LATENCY__|$BADGES_LATENCY|g" README.md
+          sed -i "s|__BADGES_LAST_UPDATED__|$BADGES_LAST_UPDATED|g" README.md
+
 
 
       - name: commit and push changes
