@@ -1,0 +1,56 @@
+name: README updater
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'stats.json' ]
+
+  schedule:
+    - cron: '*/15 * * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read stats.json and update README
+        run: |
+          git fetch origin main
+          git checkout origin/main -- stats.json || echo "stats.json not found in remote"
+
+          if [ ! -f stats.json ]; then
+            echo "JSON output not found. Exiting..."
+            exit 1
+          fi
+
+          CPU_TEMP=$(jq -r '.cpu_temperature' stats.json)
+          ENERGY_RATE=$(jq -r '.energy_rate' stats.json)
+          BATTERY_PERCENTAGE=$(jq -r '.battery_percentage' stats.json)
+          BATTERY_TIME_LEFT=$(jq -r '.battery_time_left' stats.json)
+          UPTIME=$(jq -r '.uptime' stats.json)
+          LATENCY=$(jq -r '.latency' stats.json)
+          LAST_UPDATED=$(jq -r '.last_updated' stats.json)
+
+          sed -i "s|__CPU_TEMP__|$CPU_TEMP|g" README.md
+          sed -i "s|__ENERGY_RATE__|$ENERGY_RATE|g" README.md
+          sed -i "s|__BATTERY_PERCENTAGE__|$BATTERY_PERCENTAGE|g" README.md
+          sed -i "s|__BATTERY_TIME_LEFT__|$BATTERY_TIME_LEFT|g" README.md
+          sed -i "s|__UPTIME__|$UPTIME|g" README.md
+          sed -i "s|__LATENCY__|$LATENCY|g" README.md
+          sed -i "s|__LAST_UPDATED__|$LAST_UPDATED|g" README.md
+
+
+      - name: commit and push changes
+        run: |
+          git config user.name "github-actions [BOT]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "[AUTOMATED] update README with latest server stats"
+          git push

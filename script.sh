@@ -123,12 +123,12 @@ EOF
 )
 
 # The path to the repo/directory that will be pushed to GitHub.
-REPO_PATH="~/server-stats-github-badges"
+REPO_PATH="/home/your/name"
 
 # Path as to where the converted JSON output will be saved.
-JSON_PATH="$REPO_PATH/example.json"
+JSON_PATH="$REPO_PATH/stats.json"
 
-# Makes the 
+# Makes the file in the specified directory (also makes the directory if not already made.)
 mkdir -p "$(dirname "$JSON_PATH")"
 
 # Outputs the converted JSON output into the specified JSON path.
@@ -140,23 +140,48 @@ cat $JSON_PATH
 
 ### GIT PUSH ###
 
+# Outputs the contents of the template into the README.
+cat template.md > README.md
+
+# Changes directory to the configured REPO_PATH directory.
 cd "$REPO_PATH" || exit 1
 
 # Checks if there are any differences between the local repo/directory and the repo up on GitHub.
 # The tag "--quiet" makes the whole "git diff" return only an exit code. 0 is there are no changes, and 1 if there are changes.
 # The "!" before the command inverts the output exit code. (i.e. If there is a change in the file, it will output the exit code 1, which then gets inverted into a 0, running the commands in the below if statement.)
 # In shell, and exit code "0" marks a "true" value while an exit code "1" marks a "false" value.
+
+# Stashes the unpushed changes.
+git stash --quiet
+
+# Pulls from the remote repo and syncs with the local repo.
+git pull origin main --rebase --quiet
+
+# Re-adds the unpushed files.
+git stash pop --quiet
+
 if ! git diff --quiet stats.json; then
 	# Adds the given output JSON into the commit.
 	git add stats.json
+	
+	# Outputs the contents template file into the README for good measure. 
+	cat template.md > README.md
+
+	# Adds the README to the commit.
+	git add README.md
 
 	# Adds the configured commit message (configured via setting the "COMMIT_MSG" variable.)
 	git commit -m "$COMMIT_MSG"
 	
 	# Pushes the commit to GitHub from origin (local files) to main (main branch on GitHub) and specifies where it got pushed to.
-	git push origin main 2>&1 | grep -v "pushed to: github.com"
-
-	echo "pushed to configured github repo."
+	# If the push is successful, then output the success message, if not, then output the failiure message.
+	if git push origin main 2>&1; then
+		echo "pushed to configured github repo."
+	else
+		echo "push failed. remote may have new commits."
+	fi
 else
+	# When no changes were found between the local repo and the remote repo.
 	echo "no changes to commit."
 fi
+
